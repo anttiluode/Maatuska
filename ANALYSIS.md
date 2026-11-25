@@ -35,7 +35,7 @@ Family-level log2(PCA / random) at d = 16, with * where PCA beats all 5 random s
    Early and lower-middle layers reach log2 advantages of +0.6 to +1.2. That is the same range PEEL
    reports for embeddings *trained* to be nested. Above roughly two thirds of the depth, the PCA
    order carries no extra taxonomy, and at the top it is slightly worse than random.
-2. **At the top, the nuisance sits on the lid, not in the tail.** Removing the top few principal
+2. **At the top, the nuisance sits on the lid, not in the tail** (and the order is still underneath it; see the audit below). Removing the top few principal
    components helps more and more with depth. In 410m, family purity goes from 0.552 to 0.661 in
    layer 22 when the top 1 PC is removed, and from 0.562 to 0.591 at the primary layer when the top 3
    are removed. The top PC's share of variance grows from about 5% in middle layers to 17–22% in the
@@ -91,6 +91,34 @@ layers (8–16, |corr(PC1, freq)| 0.53–0.62) and in the last layer (layer 28: 
 the top 10 PCs are removed). The Pythia picture, a Matryoshka at the bottom and a lid at the top, is a
 Pythia picture. The shared part is a label-free coarse knob plus a lid, at depths that depend on the
 model.
+
+## Audit (exploratory, after the first results)
+
+`audit.py` on the saved Pythia states. Full tables: [`results/AUDIT_EleutherAI_pythia-410m.md`](results/AUDIT_EleutherAI_pythia-410m.md),
+[`results/AUDIT_EleutherAI_pythia-1b.md`](results/AUDIT_EleutherAI_pythia-1b.md).
+
+1. **Not a tokenization artifact.** With only the 100 single-token test words, the advantage is
+   nearly unchanged. Layer 0 is +1.13 (410m) and +1.03 (1b) at d = 16, and middle layers keep PCA above
+   every random seed.
+2. **The Matryoshka does not vanish at the top; it is under the lid.** Reading components
+   k0 … k0+15 instead of 1 … 16 restores the advantage in every upper layer of both models:
+
+   | model, layer | top 16 (k0 = 0) | skip 1 | skip 4 | skip 8 |
+   |---|---:|---:|---:|---:|
+   | 410m, layer 22 | −0.06 | +0.34* | +0.41* | +0.65* |
+   | 410m, layer 24 (last) | −0.09 | +0.20* | +0.38* | +0.51* |
+   | 1b, layer 16 (last) | −0.18 | +0.16 | +0.30* | +0.44* |
+
+   So the earlier sentence "above about two thirds of the depth the order disappears" was wrong.
+   The order is there at every depth. In upper layers a few top components sit on top of it, and the
+   iris has to lift them before it reads. Lifting more (k0 = 8) helps even in the middle layers.
+
+## Bridge (in Theory, 25 Nov 2026)
+
+Writing the PCA reading back into Pythia-410m does **not** repair its answers: 0.306 vs native 0.339,
+the same as an equally long random move. Iris's neighbour blend does repair (0.452), and random neighbours
+harm (0.234). The knob is a good way to **read** neighbourhoods, not a state the model can use as its own.
+Details: [Theory/BRIDGE.md](https://github.com/anttiluode/Theory/blob/main/BRIDGE.md).
 
 ## Consequence for the iris
 
