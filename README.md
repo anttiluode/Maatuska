@@ -105,6 +105,17 @@ An extra model is descriptive only:
 python maatuska.py --models Qwen/Qwen3-1.7B --out results_qwen
 ```
 
+## Results so far (25 Nov 2026)
+
+- **Main claim PASS on three models**: Pythia-410m, Pythia-1b and Qwen3-1.7B. A label-free
+  PCA prefix carries more family structure than random directions of the same width.
+  Reports: [`results/REPORT.md`](results/REPORT.md), [`results_qwen/REPORT.md`](results_qwen/REPORT.md).
+- Layer profiles, the "lid" of top components, and what it means for the iris:
+  [`ANALYSIS.md`](ANALYSIS.md).
+- Follow-ups: [`audit.py`](audit.py) checks single-token words and lid-lifted prefixes on the saved states
+  (no GPU). The repair test now lives in Theory as
+  [Bridge](https://github.com/anttiluode/Theory/blob/main/BRIDGE.md).
+
 ## Lineage
 
 DaFuc (superweights, Oct 2024) → NumberHell (one long vector at zoom levels) →
